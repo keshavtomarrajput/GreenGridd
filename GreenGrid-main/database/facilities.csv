@@ -1,0 +1,11 @@
+facility_id,facility_code,name,facility_type,address,city,state,pincode,total_area_sqft,built_year,manager_id,baseline_kwh_per_sqm
+1,BLR-FAC-01,Manyata Tech Park Tower 7,IT Park,Outer Ring Road Nagavara,Bengaluru,Karnataka,560045,250000.00,2018,2,142.50
+2,BLR-FAC-02,Electronic City Campus B,IT Park,Phase 1 Hosur Road,Bengaluru,Karnataka,560100,180000.00,2016,2,138.00
+3,PUN-FAC-01,Hinjawadi Infotech Zone 3,IT Park,Phase 2 Hinjawadi,Pune,Maharashtra,411057,310000.00,2019,3,155.00
+4,PUN-FAC-02,Chakan Auto Components Plant,Manufacturing Plant,MIDC Phase II Chakan,Pune,Maharashtra,410501,145000.00,2015,3,260.00
+5,HYD-FAC-01,HITEC City Cyber Gateways,Commercial Office,Madhapur,Hyderabad,Telangana,500081,220000.00,2020,4,132.00
+6,HYD-FAC-02,Genome Valley BioPharma Lab,Manufacturing Plant,Shamirpet,Hyderabad,Telangana,500078,95000.00,2021,4,310.00
+7,DEL-FAC-01,CyberHub Corporate Suites,Commercial Office,DLF Cyber City Phase 2,Gurugram,Haryana,122002,190000.00,2017,8,168.00
+8,CHN-FAC-01,OMR Tech Corridor Hub,IT Park,Rajiv Gandhi Salai Thoraipakkam,Chennai,Tamil Nadu,600097,280000.00,2019,9,145.00
+9,MUM-FAC-01,BKC Financial Center West,Commercial Office,Bandra Kurla Complex,Mumbai,Maharashtra,400051,340000.00,2018,3,175.00
+10,BLR-FAC-03,Whitefield Eco-Care Hospital,Hospital,ITPL Main Road Whitefield,Bengaluru,Karnataka,560066,160000.00,2020,2,285.00

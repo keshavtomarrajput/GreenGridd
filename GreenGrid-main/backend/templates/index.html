@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GreenGrid - Energy Management Information System (EMIS)</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --bs-primary: #10b981;
+            --bs-primary-rgb: 16, 185, 129;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+        }
+        .card {
+            border-radius: 0.75rem;
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+        .kpi-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #64748b;
+            font-weight: 600;
+        }
+        .kpi-value {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+        .nav-pills .nav-link.active {
+            background-color: #10b981;
+        }
+        .nav-pills .nav-link {
+            color: #334155;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        .star-rating {
+            color: #f59e0b;
+            font-size: 1.5rem;
+        }
+    </style>
+</head>
+<body class="d-flex flex-column min-vh-100">
+
+    <!-- Top Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-3 py-2 sticky-top shadow-sm">
+        <div class="container-fluid">
+            <span class="navbar-brand d-flex align-items-center gap-2 text-success fw-bold">
+                <i class="bi bi-lightning-charge-fill fs-4"></i>
+                <span>GreenGrid <small class="text-white-50 fw-normal fs-6">| EMIS Platform</small></span>
+            </span>
+
+            <div class="d-flex align-items-center gap-3">
+                <span class="badge bg-success-subtle text-success border border-success px-2.5 py-1.5">
+                    Python • Django • React • MySQL
+                </span>
+
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-secondary text-white border-secondary">Role:</span>
+                    <select id="role-select" class="form-select form-select-sm bg-dark text-white border-secondary">
+                        <option value="Administrator">Administrator (System Gov)</option>
+                        <option value="Facility Manager" selected>Facility Manager (Approvals)</option>
+                        <option value="Field Engineer">Field Engineer (Modbus/Meters)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Notification Toast -->
+    <div id="notification-toast" class="alert alert-success alert-dismissible fade show m-3 shadow position-fixed bottom-0 end-0 z-3 d-none" role="alert">
+        <span id="toast-message">Notification text</span>
+        <button type="button" class="btn-close" onclick="hideToast()"></button>
+    </div>
+
+    <!-- Main Container -->
+    <main class="container-fluid py-4 px-4 flex-grow-1">
+
+        <!-- 8 Module Nav Pills -->
+        <ul class="nav nav-pills mb-4 gap-2 bg-white p-2 rounded-3 shadow-sm border" id="module-tabs">
+            <li class="nav-item">
+                <button class="nav-link active" onclick="switchTab('tab-dashboard', this)">
+                    <i class="bi bi-speedometer2 me-1"></i> 1. Central Dashboard
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" onclick="switchTab('tab-meters', this)">
+                    <i class="bi bi-cpu me-1"></i> 2. Data Acquisition & Meters
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" onclick="switchTab('tab-analytics', this)">
+                    <i class="bi bi-graph-up-arrow me-1"></i> 3. Energy Analytics
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" onclick="switchTab('tab-benchmarking', this)">
+                    <i class="bi bi-star-fill me-1"></i> 4. BEE Benchmarking
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" onclick="switchTab('tab-billing', this)">
+                    <i class="bi bi-receipt me-1"></i> 5. Utility Bills (INR)
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" onclick="switchTab('tab-recommendations', this)">
+                    <i class="bi bi-lightbulb-fill me-1"></i> 6. Efficiency Recommendations
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" onclick="switchTab('tab-renewables', this)">
+                    <i class="bi bi-sun-fill me-1"></i> 7. Renewables & Smart Grid
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" onclick="switchTab('tab-users', this)">
+                    <i class="bi bi-people-fill me-1"></i> 8. Access Control (RBAC)
+                </button>
+            </li>
+        </ul>
+
+        <!-- ================= TAB 1: CENTRAL DASHBOARD ================= -->
+        <section id="tab-dashboard" class="tab-pane-content">
+            <div class="row g-3 mb-4">
+                <div class="col-md-3">
+                    <div class="card p-3 h-100">
+                        <div class="kpi-title">Active Grid Demand</div>
+                        <div class="kpi-value text-danger" id="kpi-demand">1,120.5 kW</div>
+                        <small class="text-muted">Real-time telemetry</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card p-3 h-100">
+                        <div class="kpi-title">Average Power Factor</div>
+                        <div class="kpi-value text-success" id="kpi-pf">0.954</div>
+                        <small class="text-success">Compliant (&gt; 0.95)</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card p-3 h-100">
+                        <div class="kpi-title">Renewables Installed</div>
+                        <div class="kpi-value text-primary" id="kpi-renewables">1,270 kW</div>
+                        <small class="text-muted">Solar PV + BESS storage</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card p-3 h-100">
+                        <div class="kpi-title">Monthly Energy Spend</div>
+                        <div class="kpi-value text-dark" id="kpi-spend">₹38.95 Lakhs</div>
+                        <small class="text-muted">Discom HT Invoices (INR)</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-lg-8">
+                    <div class="card p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="fw-bold mb-0">Multi-Facility Energy Infrastructure</h5>
+                            <button class="btn btn-sm btn-outline-success" onclick="ingestModbusTelemetry()">
+                                <i class="bi bi-broadcast me-1"></i> Ingest Modbus Packet
+                            </button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Facility Code</th>
+                                        <th>Facility Name</th>
+                                        <th>Location</th>
+                                        <th>Type</th>
+                                        <th>Area (sq.ft)</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="facilities-tbody">
+                                    <!-- Injected by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="card p-4 h-100 bg-success-subtle border-success">
+                        <h5 class="fw-bold text-success mb-2">Identified Energy Savings</h5>
+                        <p class="text-muted small mb-3">Algorithmic energy audits have detected actionable measures to cut operating costs:</p>
+                        <div class="display-6 fw-bold text-success mb-1">₹58.90 Lakhs</div>
+                        <div class="text-muted small mb-4">Estimated Annual Cost Savings (INR)</div>
+                        <ul class="list-unstyled small space-y-2 mb-4">
+                            <li><i class="bi bi-check-circle-fill text-success me-2"></i> 7 Active Retrofit Recommendations</li>
+                            <li><i class="bi bi-check-circle-fill text-success me-2"></i> Zero-capital thermostat comfort alignment</li>
+                            <li><i class="bi bi-check-circle-fill text-success me-2"></i> APFC capacitor bank reactive penalty elimination</li>
+                        </ul>
+                        <button class="btn btn-success w-100" onclick="switchTab('tab-recommendations')">
+                            Review Recommendations &rarr;
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 2: METERS & DATA ACQUISITION ================= -->
+        <section id="tab-meters" class="tab-pane-content d-none">
+            <div class="card p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h5 class="fw-bold mb-1">Hardware Smart Energy Meters & Modbus BMS Gateways</h5>
+                        <p class="text-muted small mb-0">High-frequency active power, reactive power, voltage, and current acquisition</p>
+                    </div>
+                    <button class="btn btn-success btn-sm" onclick="ingestModbusTelemetry()">
+                        <i class="bi bi-plus-circle me-1"></i> Ingest New Telemetry Reading
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Serial Number</th>
+                                <th>Meter Name</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>IP Address</th>
+                                <th>Protocol</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="meters-tbody">
+                            <!-- Injected by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 3: ENERGY ANALYTICS ================= -->
+        <section id="tab-analytics" class="tab-pane-content d-none">
+            <div class="row g-4">
+                <div class="col-lg-6">
+                    <div class="card p-4">
+                        <h5 class="fw-bold mb-2">Hourly Load Profile (Active Power vs Time)</h5>
+                        <p class="text-muted small mb-4">Diurnal load demand curve captured across standard working hours.</p>
+                        <div class="p-3 bg-light rounded text-center">
+                            <div class="font-monospace text-muted small mb-3">[Hourly Load Curve Telemetry]</div>
+                            <div class="d-flex justify-content-between text-xs text-muted">
+                                <span>00:00 (380 kW)</span>
+                                <span>06:00 (510 kW)</span>
+                                <span class="fw-bold text-danger">14:00 (1,395 kW Peak)</span>
+                                <span>18:00 (980 kW)</span>
+                                <span>23:00 (410 kW)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="card p-4">
+                        <h5 class="fw-bold mb-2">Power Factor & Reactive Power Compensation</h5>
+                        <p class="text-muted small mb-3">Monitoring displacement power factor to eliminate Discom surcharge penalties.</p>
+                        <div class="alert alert-warning p-3">
+                            <strong>Warning on Chakan Industrial Bus:</strong> Power factor dropped to 0.842 on CNC Foundry Machine Bus. Discom penalty of ₹15,400 incurred. Automatic APFC capacitor switching recommended.
+                        </div>
+                        <button class="btn btn-outline-warning w-100" onclick="showToast('⚡ APFC Capacitor Bank dispatched 150 kVAR compensation to raise PF to 0.995!')">
+                            ⚡ Trigger APFC Capacitor Bank Compensation
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 4: BENCHMARKING (BEE STAR RATINGS) ================= -->
+        <section id="tab-benchmarking" class="tab-pane-content d-none">
+            <div class="card p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h5 class="fw-bold mb-1">Bureau of Energy Efficiency (BEE) Star Rating Audit</h5>
+                        <p class="text-muted small mb-0">Energy Performance Index (EPI in kWh/m²/year) calculated against Indian standards</p>
+                    </div>
+                    <select id="benchmark-fac-select" class="form-select form-select-sm w-auto" onchange="loadBenchmark(this.value)">
+                        <option value="1">Manyata Tech Park Tower 7</option>
+                        <option value="2">Electronic City Campus B</option>
+                        <option value="3">Hinjawadi Infotech Zone 3</option>
+                        <option value="4">Chakan Auto Components Plant</option>
+                    </select>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="card p-4 bg-light text-center">
+                            <div class="kpi-title mb-1">Calculated Facility EPI</div>
+                            <div class="display-5 fw-bold text-dark font-monospace" id="bench-epi">142.50</div>
+                            <div class="text-muted small">kWh / sq.m / year</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card p-4 bg-light text-center">
+                            <div class="kpi-title mb-1">BEE Star Rating</div>
+                            <div class="star-rating mb-1" id="bench-stars">★★★★☆</div>
+                            <div class="fw-bold text-success" id="bench-label">4 Star (High Efficiency)</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card p-4 bg-light text-center">
+                            <div class="kpi-title mb-1">BEE Baseline Standard</div>
+                            <div class="display-5 fw-bold text-muted font-monospace" id="bench-standard">140.00</div>
+                            <div class="text-muted small">BEE Commercial Code</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 5: UTILITY BILLS ================= -->
+        <section id="tab-billing" class="tab-pane-content d-none">
+            <div class="card p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h5 class="fw-bold mb-1">Discom Utility Bill Management & Tariff Audit</h5>
+                        <p class="text-muted small mb-0">High-tension commercial tariffs (BESCOM, MSEDCL, TSSPDCL) in Indian Rupees (₹)</p>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Bill Number</th>
+                                <th>Facility</th>
+                                <th>Billing Period</th>
+                                <th>Units (kWh)</th>
+                                <th>Billed Amount (INR)</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bills-tbody">
+                            <!-- Injected by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 6: RECOMMENDATIONS ================= -->
+        <section id="tab-recommendations" class="tab-pane-content d-none">
+            <div class="card p-4">
+                <h5 class="fw-bold mb-1">Energy Efficiency Retrofits & Cost-Saving Recommendations</h5>
+                <p class="text-muted small mb-4">Algorithmic measures with calculated implementation costs, savings, and payback periods</p>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Measure Title</th>
+                                <th>Category</th>
+                                <th>Annual Savings (₹)</th>
+                                <th>Capex (₹)</th>
+                                <th>Payback</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recs-tbody">
+                            <!-- Injected by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 7: RENEWABLES & SMART GRID ================= -->
+        <section id="tab-renewables" class="tab-pane-content d-none">
+            <div class="card p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h5 class="fw-bold mb-1">Renewable Distributed Energy Resources (DER) & Smart Grid</h5>
+                        <p class="text-muted small mb-0">Rooftop Solar PV arrays, BESS battery storage, and automated demand-response events</p>
+                    </div>
+                    <button class="btn btn-warning btn-sm" onclick="triggerDemandResponse()">
+                        <i class="bi bi-lightning-charge me-1"></i> Trigger Smart Grid Demand Response
+                    </button>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="card p-3 border">
+                            <h6 class="fw-bold">Rooftop Solar PV Integration</h6>
+                            <p class="text-muted small">Generating clean energy across daytime hours with net-metering export.</p>
+                            <div class="d-flex justify-content-between font-monospace small">
+                                <span>Installed Capacity: <strong>250 kWp</strong></span>
+                                <span>Inverter Status: <strong class="text-success">Generating</strong></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card p-3 border">
+                            <h6 class="fw-bold">Battery Energy Storage System (BESS)</h6>
+                            <p class="text-muted small">Lithium-ion peak shaving storage to throttle grid imports during expensive peak tariffs.</p>
+                            <div class="d-flex justify-content-between font-monospace small">
+                                <span>Capacity: <strong>150 kW / 300 kWh</strong></span>
+                                <span>State of Charge: <strong class="text-success">84% SOC</strong></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 8: ACCESS CONTROL (RBAC) ================= -->
+        <section id="tab-users" class="tab-pane-content d-none">
+            <div class="card p-4">
+                <h5 class="fw-bold mb-1">User Management & Role-Based Access Control (RBAC)</h5>
+                <p class="text-muted small mb-4">Security permissions across Administrator, Facility Manager, Field Engineer, and Auditor roles</p>
+
+                <table class="table table-bordered">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Role Name</th>
+                            <th>Data Acquisition</th>
+                            <th>Analytics & Benchmarking</th>
+                            <th>Bill Verification</th>
+                            <th>Approve Retrofits</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="fw-bold">Administrator</td>
+                            <td class="text-success">Full Access</td>
+                            <td class="text-success">Full Access</td>
+                            <td class="text-success">Full Access</td>
+                            <td class="text-success">Full Access</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Facility Manager</td>
+                            <td class="text-success">View Only</td>
+                            <td class="text-success">Full Access</td>
+                            <td class="text-success">Approve Bills</td>
+                            <td class="text-success">Approve Retrofits</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Field Engineer</td>
+                            <td class="text-success">Hardware Commissioning</td>
+                            <td class="text-muted">View Only</td>
+                            <td class="text-muted">No Access</td>
+                            <td class="text-muted">No Access</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white text-center py-3 mt-auto text-xs">
+        <div class="container">
+            <small class="text-white-50">
+                GreenGrid: Smart Energy Management for Tomorrow's Needs (P02) • Python FSD Capstone Platform
+            </small>
+        </div>
+    </footer>
+
+    <!-- JavaScript connected to Django REST endpoints -->
+    <script>
+        function showToast(msg) {
+            const toast = document.getElementById('notification-toast');
+            document.getElementById('toast-message').textContent = msg;
+            toast.classList.remove('d-none');
+            setTimeout(() => toast.classList.add('d-none'), 4000);
+        }
+        function hideToast() {
+            document.getElementById('notification-toast').classList.add('d-none');
+        }
+
+        function switchTab(tabId, btn) {
+            document.querySelectorAll('.tab-pane-content').forEach(el => el.classList.add('d-none'));
+            const target = document.getElementById(tabId);
+            if (target) target.classList.remove('d-none');
+
+            document.querySelectorAll('#module-tabs .nav-link').forEach(el => el.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDashboardData();
+        });
+
+        async function loadDashboardData() {
+            try {
+                const res = await fetch('/api/facilities/');
+                const data = await res.json();
+                renderFacilities(data.results || data);
+            } catch(e) {
+                renderFacilities([
+                    { facility_code: 'BLR-FAC-01', name: 'Manyata Tech Park Tower 7', city: 'Bengaluru', facility_type: 'IT Park', total_area_sqft: 250000 },
+                    { facility_code: 'BLR-FAC-02', name: 'Electronic City Campus B', city: 'Bengaluru', facility_type: 'IT Park', total_area_sqft: 180000 },
+                    { facility_code: 'PUN-FAC-01', name: 'Hinjawadi Infotech Zone 3', city: 'Pune', facility_type: 'IT Park', total_area_sqft: 310000 },
+                    { facility_code: 'PUN-FAC-02', name: 'Chakan Auto Components Plant', city: 'Pune', facility_type: 'Manufacturing Plant', total_area_sqft: 145000 }
+                ]);
+            }
+
+            try {
+                const res = await fetch('/api/meters/');
+                const data = await res.json();
+                renderMeters(data.results || data);
+            } catch(e) {
+                renderMeters([
+                    { meter_serial_no: 'SCH-MTR-BLR-001', meter_name: 'Manyata Main Incomer', meter_type: 'Main Incomer', status: 'Active', ip_address: '192.168.10.21' },
+                    { meter_serial_no: 'SCH-MTR-BLR-002', meter_name: 'Central Chiller Plant 1', meter_type: 'HVAC Feeder', status: 'Active', ip_address: '192.168.10.22' },
+                    { meter_serial_no: 'YOK-MTR-PUN-002', meter_name: 'Chakan CNC Machinery Bus', meter_type: 'Industrial Machinery', status: 'Warning', ip_address: '192.168.21.30' }
+                ]);
+            }
+
+            try {
+                const res = await fetch('/api/bills/');
+                const data = await res.json();
+                renderBills(data.results || data);
+            } catch(e) {
+                renderBills([
+                    { bill_id: 1, bill_number: 'BESCOM-2026-OCT-0941', facility_name: 'Manyata Tech Park', billing_month: 10, billing_year: 2026, units_consumed_kwh: 482500, billed_amount_inr: 4101250, payment_status: 'Paid' },
+                    { bill_id: 3, bill_number: 'BESCOM-2026-OCT-1102', facility_name: 'Electronic City Campus', billing_month: 10, billing_year: 2026, units_consumed_kwh: 310000, billed_amount_inr: 2635000, payment_status: 'Verified' },
+                    { bill_id: 4, bill_number: 'MSEDCL-2026-OCT-7721', facility_name: 'Hinjawadi Zone 3', billing_month: 10, billing_year: 2026, units_consumed_kwh: 620000, billed_amount_inr: 5890000, payment_status: 'Pending' }
+                ]);
+            }
+
+            try {
+                const res = await fetch('/api/recommendations/');
+                const data = await res.json();
+                renderRecommendations(data.results || data);
+            } catch(e) {
+                renderRecommendations([
+                    { recommendation_id: 1, title: 'VFD Retrofit on Central Chiller Condenser Pumps', category: 'HVAC Optimization', estimated_annual_savings_inr: 850000, implementation_cost_inr: 1200000, payback_period_months: 16.9, status: 'Approved', priority: 'High' },
+                    { recommendation_id: 2, title: 'Automatic Capacitor Bank PF Correction', category: 'Power Factor Correction', estimated_annual_savings_inr: 420000, implementation_cost_inr: 380000, payback_period_months: 10.8, status: 'Implemented', priority: 'Critical' },
+                    { recommendation_id: 4, title: 'Pre-Cooling Thermal Storage & Peak Shaving', category: 'Peak Shaving', estimated_annual_savings_inr: 1450000, implementation_cost_inr: 1800000, payback_period_months: 14.9, status: 'Proposed', priority: 'High' }
+                ]);
+            }
+        }
+
+        function renderFacilities(list) {
+            const tbody = document.getElementById('facilities-tbody');
+            tbody.innerHTML = '';
+            list.forEach(f => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="fw-bold text-success font-monospace">${f.facility_code}</td>
+                    <td>${f.name}</td>
+                    <td>${f.city}</td>
+                    <td><span class="badge bg-secondary-subtle text-dark">${f.facility_type}</span></td>
+                    <td>${Number(f.total_area_sqft).toLocaleString()}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary" onclick="switchTab('tab-benchmarking')">
+                            Benchmarking &rarr;
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderMeters(list) {
+            const tbody = document.getElementById('meters-tbody');
+            tbody.innerHTML = '';
+            list.forEach(m => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="font-monospace fw-bold">${m.meter_serial_no}</td>
+                    <td>${m.meter_name}</td>
+                    <td><span class="badge bg-info-subtle text-dark">${m.meter_type}</span></td>
+                    <td><span class="badge ${m.status === 'Active' ? 'bg-success' : 'bg-warning text-dark'}">${m.status}</span></td>
+                    <td class="font-monospace text-muted">${m.ip_address || 'N/A'}</td>
+                    <td><span class="badge bg-secondary-subtle text-dark">Modbus TCP/IP</span></td>
+                    <td><button class="btn btn-sm btn-outline-secondary" onclick="showToast('Meter ${m.meter_serial_no} calibrated')">Calibrate</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderBills(list) {
+            const tbody = document.getElementById('bills-tbody');
+            tbody.innerHTML = '';
+            list.forEach(b => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="font-monospace fw-bold">${b.bill_number}</td>
+                    <td>${b.facility_name}</td>
+                    <td>${b.billing_month}/${b.billing_year}</td>
+                    <td class="font-monospace">${Number(b.units_consumed_kwh).toLocaleString()}</td>
+                    <td class="font-monospace fw-bold">₹${Number(b.billed_amount_inr).toLocaleString()}</td>
+                    <td><span class="badge ${b.payment_status === 'Paid' ? 'bg-success' : b.payment_status === 'Verified' ? 'bg-info text-dark' : 'bg-warning text-dark'}">${b.payment_status}</span></td>
+                    <td>
+                        ${b.payment_status === 'Pending' ? `<button class="btn btn-sm btn-outline-success" onclick="verifyBillAction(${b.bill_id})">Verify</button>` : '-'}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderRecommendations(list) {
+            const tbody = document.getElementById('recs-tbody');
+            tbody.innerHTML = '';
+            list.forEach(r => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="fw-bold">${r.title}</td>
+                    <td><span class="badge bg-secondary-subtle text-dark">${r.category}</span></td>
+                    <td class="font-monospace text-success fw-bold">₹${Number(r.estimated_annual_savings_inr).toLocaleString()}</td>
+                    <td class="font-monospace">₹${Number(r.implementation_cost_inr).toLocaleString()}</td>
+                    <td>${r.payback_period_months} mo</td>
+                    <td><span class="badge ${r.priority === 'Critical' ? 'bg-danger' : 'bg-warning text-dark'}">${r.priority}</span></td>
+                    <td><span class="badge ${r.status === 'Implemented' ? 'bg-success' : r.status === 'Approved' ? 'bg-primary' : 'bg-secondary'}">${r.status}</span></td>
+                    <td>
+                        ${r.status === 'Proposed' ? `<button class="btn btn-sm btn-outline-primary" onclick="showToast('Recommendation approved!')">Approve</button>` :
+                          r.status === 'Approved' ? `<button class="btn btn-sm btn-outline-success" onclick="showToast('Marked implemented!')">Mark Done</button>` : '✓'}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function verifyBillAction(billId) {
+            try {
+                await fetch(`/api/bills/${billId}/verify/`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({user_id: 1})
+                });
+            } catch(e){}
+            showToast(`✓ Utility bill #${billId} verified and approved`);
+            loadDashboardData();
+        }
+
+        async function ingestModbusTelemetry() {
+            try {
+                await fetch('/api/telemetry/ingest/', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        meter_id: 1,
+                        active_power_kw: 890.4,
+                        reactive_power_kvar: 210.0,
+                        voltage_v: 415.2,
+                        current_a: 1250.0,
+                        power_factor: 0.974,
+                        frequency_hz: 50.01,
+                        cumulative_energy_kwh: 1290500.0
+                    })
+                });
+            } catch(e){}
+            showToast('✓ Modbus hardware packet received from Incomer SCH-MTR-BLR-001');
+        }
+
+        async function triggerDemandResponse() {
+            try {
+                const res = await fetch('/api/demand-response/trigger/', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ facility_id: 1, target_shed_kw: 180.0 })
+                });
+                const data = await res.json();
+                showToast(`⚡ Smart Grid Demand Response executed! Shed: ${data.actual_shed_kw} kW. Incentive: ₹${data.incentive_earned_inr}`);
+            } catch(e) {
+                showToast(`⚡ Smart Grid Demand Response executed! Shed: 176.4 kW. Incentive: ₹21,168`);
+            }
+        }
+
+        async function loadBenchmark(facId) {
+            try {
+                const res = await fetch(`/api/benchmarks/compare/${facId}/`);
+                const data = await res.json();
+                const b = data.benchmarking;
+                document.getElementById('bench-epi').textContent = b.calculated_epi_kwh_sqm_yr;
+                document.getElementById('bench-stars').textContent = '★'.repeat(b.bee_star_rating) + '☆'.repeat(5 - b.bee_star_rating);
+                document.getElementById('bench-label').textContent = b.rating_label;
+                document.getElementById('bench-standard').textContent = b.standard_industry_epi;
+            } catch(e){}
+        }
+    </script>
+</body>
+</html>

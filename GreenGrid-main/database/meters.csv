@@ -1,0 +1,11 @@
+meter_id,meter_serial_no,facility_id,meter_name,meter_type,manufacturer,model,installation_date,status,ip_address,modbus_slave_id
+1,SCH-MTR-BLR-001,1,Manyata Main Grid Incomer Feeder,Main Incomer,Schneider Electric,PowerLogic ION9000,2023-01-15,Active,192.168.10.21,1
+2,SCH-MTR-BLR-002,1,Manyata Central Chiller Plant 1,HVAC Feeder,Schneider Electric,PM8000,2023-01-16,Active,192.168.10.22,2
+3,ABB-MTR-BLR-003,1,Manyata Server Room UPS Bus A,UPS & Data Center,ABB,M4M 30 Modbus,2023-02-10,Active,192.168.10.23,3
+4,SCH-MTR-BLR-004,1,Manyata Rooftop 250kW Solar Feeder,Solar Inverter Feed,Schneider Electric,PM5560,2023-03-01,Active,192.168.10.24,4
+5,LNT-MTR-ECI-001,2,ECity Campus Main Transformer,Main Incomer,L&T Electrical,Quasar Multifunction,2022-11-20,Active,192.168.11.10,1
+6,LNT-MTR-ECI-002,2,ECity AHU & Air Ventilation Subsystem,HVAC Feeder,L&T Electrical,Acuvim II,2022-11-20,Active,192.168.11.11,2
+7,SCH-MTR-PUN-001,3,Hinjawadi Zone 3 Primary Feeder,Main Incomer,Schneider Electric,ION9000,2023-04-12,Active,192.168.20.15,1
+8,YOK-MTR-PUN-002,4,Chakan Heavy CNC Foundry Machine Bus,Industrial Machinery,Yokogawa,CW500,2022-08-14,Warning,192.168.21.30,2
+9,SIE-MTR-HYD-001,5,HITEC CyberGateways Incomer,Main Incomer,Siemens,PAC4200,2023-06-05,Active,192.168.30.12,1
+10,SIE-MTR-HYD-002,6,Genome BioPharma Cleanroom HVAC,HVAC Feeder,Siemens,PAC3200,2023-07-20,Active,192.168.31.18,2
